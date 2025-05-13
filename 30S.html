@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>全景体验引导页</title>
+    <style>
+        #container { text-align: center; padding: 20px; }
+        #timer { font-size: 24px; margin: 20px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h2>请按以下步骤完成体验：</h2>
+        <button id="startBtn" onclick="startExperience()">开始体验</button>
+        <div id="timer" class="hidden"></div>
+        <button id="surveyBtn" class="hidden" onclick="window.open('https://www.wjx.cn/vm/QAr7xWG.aspx#')">填写问卷</button>
+    </div>
+
+    <script>
+        const steps = [
+            { 
+                url: 'https://pano.dpm.org.cn/#/panorama?panorama_id=50&scene_id=2991&scene_name=scene_2991_summer',
+                label: '全景1（有声）',
+                duration: 30
+            },
+            { 
+                url: 'https://pano.dpm.org.cn/#/panorama?panorama_id=50&scene_id=2991&scene_name=scene_2991_summer',
+                label: '全景1（无声）',
+                duration: 30,
+                muted: true
+            },
+            { 
+                url: 'https://www.dpm.org.cn/vr/yangxindian/tour.html',
+                label: '全景2（有声）',
+                duration: 30
+            },
+            { 
+                url: 'https://www.dpm.org.cn/vr/yangxindian/tour.html',
+                label: '全景2（无声）',
+                duration: 30,
+                muted: true
+            }
+        ];
+        let currentStep = 0;
+        let timer;
+
+        function startExperience() {
+            document.getElementById('startBtn').classList.add('hidden');
+            document.getElementById('timer').classList.remove('hidden');
+            nextStep();
+        }
+
+        function nextStep() {
+            if (currentStep >= steps.length) {
+                document.getElementById('surveyBtn').classList.remove('hidden');
+                document.getElementById('timer').classList.add('hidden');
+                return;
+            }
+
+            const step = steps[currentStep];
+            const newWindow = window.open(step.url, '_blank');
+            
+            // 尝试静音（需目标页面支持URL参数，否则需用户手动操作）
+            if (step.muted && newWindow) {
+                try {
+                    newWindow.muted = true; // 此操作可能因跨域限制无效
+                } catch (e) {
+                    console.log("静音操作被浏览器阻止");
+                }
+            }
+
+            updateTimer(step.duration);
+            currentStep++;
+            
+            // 设置下一步跳转
+            setTimeout(() => {
+                if (newWindow) newWindow.close();
+                nextStep();
+            }, step.duration * 1000);
+        }
+
+        function updateTimer(seconds) {
+            let remaining = seconds;
+            document.getElementById('timer').textContent = `当前步骤剩余时间：${remaining}秒`;
+            
+            timer = setInterval(() => {
+                remaining--;
+                document.getElementById('timer').textContent = `当前步骤剩余时间：${remaining}秒`;
+                if (remaining <= 0) clearInterval(timer);
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
