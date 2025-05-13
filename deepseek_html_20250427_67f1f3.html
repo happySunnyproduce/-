@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>全景体验引导系统</title>
+    <style>
+        #container { text-align: center; padding: 20px; max-width: 600px; margin: 50px auto; }
+        #timer { 
+            font-size: 28px; 
+            margin: 30px 0;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover { background: #2980b9; }
+        .hidden { display: none; }
+        .step-info { 
+            margin: 20px 0;
+            font-size: 16px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>全景体验流程</h1>
+        <div class="step-info" id="currentStep"></div>
+        <button id="startBtn" onclick="startExperience()">开始沉浸式体验</button>
+        <div id="timer" class="hidden"></div>
+        <button id="surveyBtn" class="hidden" onclick="window.open('https://www.wjx.cn/vm/QAr7xWG.aspx#')">
+            立即填写问卷
+        </button>
+    </div>
+
+    <script>
+        const experienceSteps = [
+            { 
+                url: 'https://pano.dpm.org.cn/#/panorama?panorama_id=50&scene_id=2991&scene_name=scene_2991_summer',
+                title: '全景展厅1 - 有声模式',
+                duration: 180  // 3分钟
+            },
+            { 
+                url: 'https://pano.dpm.org.cn/#/panorama?panorama_id=50&scene_id=2991&scene_name=scene_2991_summer',
+                title: '全景展厅1 - 静音模式',
+                duration: 180,
+                muted: true
+            },
+            { 
+                url: 'https://www.dpm.org.cn/vr/yangxindian/tour.html',
+                title: '全景展厅2 - 有声模式',
+                duration: 180
+            },
+            { 
+                url: 'https://www.dpm.org.cn/vr/yangxindian/tour.html',
+                title: '全景展厅2 - 静音模式',
+                duration: 180,
+                muted: true
+            }
+        ];
+
+        let currentStepIndex = 0;
+        let countdownInterval;
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const secs = (seconds % 60).toString().padStart(2, '0');
+            return `${mins}分${secs}秒`;
+        }
+
+        function startExperience() {
+            document.getElementById('startBtn').classList.add('hidden');
+            document.getElementById('timer').classList.remove('hidden');
+            proceedToNextStep();
+        }
+
+        function proceedToNextStep() {
+            if (currentStepIndex >= experienceSteps.length) {
+                document.getElementById('surveyBtn').classList.remove('hidden');
+                document.getElementById('timer').classList.add('hidden');
+                document.getElementById('currentStep').textContent = "所有步骤已完成！";
+                return;
+            }
+
+            const currentStep = experienceSteps[currentStepIndex];
+            document.getElementById('currentStep').textContent = `当前步骤：${currentStep.title}`;
+            
+            const newWindow = window.open(currentStep.url, '_blank');
+            
+            // 尝试设置静音（需目标页面允许跨域操作）
+            if (currentStep.muted && newWindow) {
+                setTimeout(() => {
+                    try {
+                        newWindow.document.querySelector('video').muted = true;
+                    } catch (e) {
+                        console.warn('静音操作被浏览器安全策略阻止');
+                    }
+                }, 2000);
+            }
+
+            startCountdown(currentStep.duration);
+            currentStepIndex++;
+            
+            setTimeout(() => {
+                if (newWindow && !newWindow.closed) newWindow.close();
+                proceedToNextStep();
+            }, currentStep.duration * 1000);
+        }
+
+        function startCountdown(duration) {
+            let remaining = duration;
+            updateTimerDisplay(remaining);
+            
+            countdownInterval = setInterval(() => {
+                remaining--;
+                updateTimerDisplay(remaining);
+                if (remaining <= 0) clearInterval(countdownInterval);
+            }, 1000);
+        }
+
+        function updateTimerDisplay(seconds) {
+            document.getElementById('timer').innerHTML = `
+                <div>剩余体验时间：</div>
+                <div style="font-size: 2.5em; color: #e74c3c;">${formatTime(seconds)}</div>
+            `;
+        }
+    </script>
+</body>
+</html>
